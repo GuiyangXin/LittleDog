@@ -13,6 +13,9 @@ classdef LittleDog < RigidBodyManipulator %& LeggedRobot
 %      obj = addFoot(obj, 'back_left', 'back_left_foot_center');
 %      obj = addFoot(obj, 'back_right', 'back_right_foot_center');
     end
+
+%***********try to use git**********
+%***********************************
     
     function x0 = home(obj)
       hip_roll = .1;
