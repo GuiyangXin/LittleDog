@@ -1,9 +1,10 @@
 classdef LittleDog < RigidBodyManipulator %& LeggedRobot
-  
+  % The mass of LittleDog is 2.7464Kg
   methods
     function obj = LittleDog
       options.floating = true;
       options.terrain = RigidBodyFlatTerrain();
+      options.use_bullet = true; 
       w = warning('off','Drake:RigidBodyManipulator:UnsupportedContactPoints');
       obj = obj@RigidBodyManipulator('LittleDog.urdf',options);
       warning(w);
@@ -34,9 +35,58 @@ classdef LittleDog < RigidBodyManipulator %& LeggedRobot
       x0.back_left_hip_roll = hip_roll;
       x0.back_left_hip_pitch = -hip_pitch;
       x0.back_left_knee = knee;
+      x0.base_z = 0.146;
+      x0 = resolveConstraints(obj,x0);  % andres says calling this results
+%      in snopt be slow thereafter.  In fact, it only solves for one var:
+%       x0.base_z = 0.146;
+    end
+    
+    function x0 = contactWithGround(obj,distance)
+      hip_roll = .1;
+      hip_pitch = 1;
+      knee = 1.55;
+      x0 = Point(getStateFrame(obj));
+      x0.front_right_hip_roll = -hip_roll;
+      x0.front_right_hip_pitch = hip_pitch;
+      x0.front_right_knee = -knee;
+      x0.front_left_hip_roll = hip_roll;
+      x0.front_left_hip_pitch = hip_pitch;
+      x0.front_left_knee = -knee;
+      x0.back_right_hip_roll = -hip_roll;
+      x0.back_right_hip_pitch = -hip_pitch;
+      x0.back_right_knee = knee;
+      x0.back_left_hip_roll = hip_roll;
+      x0.back_left_hip_pitch = -hip_pitch;
+      x0.back_left_knee = knee;
 %      x0 = resolveConstraints(obj,x0);  % andres says calling this results
 %      in snopt be slow thereafter.  In fact, it only solves for one var:
+      x0.base_z = 0.146-distance;
+    end
+    
+    function x0 = initialize(obj)
+%       hip_roll = .1;
+%       hip_pitch = 1;
+%       knee = 1.55;
+      hip_roll = 0.1;
+      hip_pitch = 1;
+      knee = 1.55;
+      x0 = Point(getStateFrame(obj));
+      x0.front_right_hip_roll = -hip_roll;
+      x0.front_right_hip_pitch = hip_pitch;
+      x0.front_right_knee = -knee;
+      x0.front_left_hip_roll = hip_roll;
+      x0.front_left_hip_pitch = hip_pitch;
+      x0.front_left_knee = -knee;
+      x0.back_right_hip_roll = -hip_roll;
+      x0.back_right_hip_pitch = -hip_pitch;
+      x0.back_right_knee = knee;
+      x0.back_left_hip_roll = hip_roll;
+      x0.back_left_hip_pitch = -hip_pitch;
+      x0.back_left_knee = knee;
+%       x0 = resolveConstraints(obj,x0);  % andres says calling this results
+%      in snopt be slow thereafter.  In fact, it only solves for one var:
       x0.base_z = 0.146;
+%       x0.base_z = 0.14583;
     end
     
     function xstar = defaultFixedPoint(obj)
