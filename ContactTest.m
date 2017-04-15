@@ -2,12 +2,14 @@ clear;clc;close all
 r = LittleDog;
 sys = TimeSteppingRigidBodyManipulator(r,0.001);
 sys = addSensor(sys,FullStateFeedbackSensor());
-body = findLinkId(sys,'front_left_lower_leg');
-frame = RigidBodyFrame(body,zeros(3,1),zeros(3,1),'FT_frame');
+body = findLinkId(sys,'front_right_lower_leg');
+% frame = RigidBodyFrame(body,zeros(3,1),zeros(3,1),'FT_frame');
+frame = RigidBodyFrame(body,[-0.0265 0 -0.0985]',zeros(3,1),'FT_frame');
 sys = addFrame(sys,frame);
 sys = addSensor(sys,ContactForceTorqueSensor(sys,frame));
 sys = compile(sys);
 v = constructVisualizer(sys);
+sys1=sys;
 
 foot = struct('id',[],'in_stance',[]);
 foot(1).id = r.findFrameId('front_left_foot_center');
@@ -15,6 +17,7 @@ foot(2).id = r.findFrameId('front_right_foot_center');
 foot(3).id = r.findFrameId('back_left_foot_center');
 foot(4).id = r.findFrameId('back_right_foot_center');
 body_id=findLinkId(r,'body');
+FTid=sys.findFrameId('FT_frame');
     
 x0 = home(r);
 % x0 = r.resolveConstraints(x0);
@@ -109,15 +112,46 @@ else
     figure
     plot(xtraj.xx(39,:))
     figure
-    plot(xtraj.xx(1,:))
-    hold on
-    plot(q(1,:),'r')
+    plot(xtraj.xx(40,:))
     figure
-    plot(xtraj.xx(2,:))
-    hold on
-    plot(q(2,:),'r')
+    plot(xtraj.xx(41,:))
     figure
-    plot(xtraj.xx(3,:))
-    hold on 
-    plot(q(3,:),'r')
+    plot(xtraj.xx(42,:))
+%     figure
+%     plot(xtraj.xx(1,:))
+%     hold on
+%     plot(q(1,:),'r')
+%     figure
+%     plot(xtraj.xx(2,:))
+%     hold on
+%     plot(q(2,:),'r')
+%     figure
+%     plot(xtraj.xx(3,:))
+%     hold on 
+%     plot(q(3,:),'r')
 end
+
+%parse the measurement result
+% q1=qstar;
+% options.rotation_type=1;
+% kinsol = doKinematics(sys1,q1);
+% pose=forwardKin(sys1,kinsol,FTid,[0;0;0],options);
+options.rotation_type=2;
+% pose1=forwardKin(sys1,kinsol,foot(1).id,[0;0;0],options);
+% pose2=forwardKin(sys1,kinsol,foot(2).id,[0;0;0],options);
+% quat = pose1(4:7);
+% rotm = quat2rotmat(quat);
+for i=2:T/0.001+1
+    kinsol = doKinematics(sys1,q(:,i-1));
+    pose=zeros(3,4);
+    pose= forwardKin(sys1,kinsol,FTid,[0;0;0],options);
+    quat = pose(4:7);
+    rotm = quat2rotmat(quat);
+    force(:,i-1)=rotm*xtraj.xx(37:39,i-1);
+end
+figure
+plot(force(1,:))
+figure
+plot(force(2,:))
+figure
+plot(force(3,:))
